@@ -20,16 +20,20 @@ class Player:
     """
     name: str
     hand: list[Card]
+    bankroll: int
 
-    def __init__(self, name: str = "Player"):
+    def __init__(self, bankroll: int = 100, name: str = "Player"):
         """
         Parameters
         ----------
+        bankroll: int
+            starting number of chips
         name: str 
             Name of the player
         """
         self.name = name
         self.hand = []
+        self.bankroll = bankroll
 
     def receiveCard(self, card: Card) -> None:
         self.hand.append(card)

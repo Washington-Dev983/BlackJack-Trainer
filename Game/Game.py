@@ -20,10 +20,12 @@ class Game:
     """
     dealer: Player = Player("Dealer")
     player: Player
+    startingBankroll: int
     deckSize: int
+    burnCards: int
     deck: Deck
 
-    def __init__(self, playerName: str, deckSize: int):
+    def __init__(self, playerName: str, deckSize: int, startingBankroll: int, burnCards: int):
         """
         Parameters
         ----------
@@ -33,9 +35,10 @@ class Game:
         deckSize: int
             Number of decks to use in the game
         """
-        self.player = Player(playerName)
+        self.player = Player(startingBankroll, playerName)
         self.deckSize = deckSize
-        self.deck = Deck(deckSize)
+        self.burnCards = burnCards
+        self.deck = Deck(deckSize, burnCards)
 
     def playerTurn(self) -> None:
         playerTurn: bool = True
@@ -79,6 +82,8 @@ class Game:
                     print(f"\nHand Total: {playerHandValue}")
                 case _:
                     print("Invalid option please enter S to stand, H to hit, or C to check hand")
+        
+        return playerHandValue
 
     def dealerTurn(self) -> None:
         dealerTurn: bool = True
@@ -105,18 +110,30 @@ class Game:
                 print(f"Dealer turn ending. Final hand total: {dealerHandValue}\n")
                 dealerTurn = False
 
+        return dealerHandValue
+
     def runGame(self) -> None:
         continuePlay: bool = True
 
         while(continuePlay):
-            #TODO: Make empty deck logic
-            if len(self.deck.cards) < floor(54 * self.deckSize *.4):
+            print(f"current deck size: {len(self.deck.cards)}")
+            if (len(self.deck.cards) < floor(52 * self.deckSize *.4)):
                 print("Deck low. Shuffling new deck")
-                self.deck = Deck(self.deckSize)
-
+                self.deck = Deck(self.deckSize, self.burnCards)
 
             self.dealer.resetHand()
             self.player.resetHand()
+
+            while(True):
+                if(self.player.bankroll <= 0):
+                    print("You're out of money... Have 10 to play with")
+                    self.player.bankroll = 10
+                playerBet: int = int(input(f"How much will you bet? Current bankroll: {self.player.bankroll}\n"))
+
+                if(playerBet > self.player.bankroll):
+                    print("Not enough chips. Please choose a value less than your bankroll")
+                else:
+                    break
 
             for _ in range(2):
                 self.dealer.receiveCard(self.deck.cards.pop())
@@ -127,37 +144,40 @@ class Game:
             print(f"~~The Dealer Shows a {dealerUpCard}~~\n")
 
             print(f"~~{self.player.name}'s Turn~~")
-            self.playerTurn()
+            playerFinalTotal: int = self.playerTurn()
             print(f"~~Dealer's Turn~~")
-            self.dealerTurn()
-
-            playerFinalTotal: int = self.player.getHandValue()
-            dealerFinalTotal: int = self.dealer.getHandValue()
+            dealerFinalTotal: int = self.dealerTurn()
 
             print("Game ending. Final values are...")
             print(f"{self.player.name}: {playerFinalTotal}")
             print(f"Dealer: {dealerFinalTotal}")
 
-            if(playerFinalTotal == dealerFinalTotal):
-                print("A Push")
+            if(playerFinalTotal > 21):
+                print(f"{self.player.name} Busted! You lost {playerBet} chips")
+                self.player.bankroll -= playerBet
             
             elif(dealerFinalTotal == 21):
-                print("Dealer got Blackjack!")
+                print(f"Dealer got Blackjack! You lost {playerBet} chips")
+                self.player.bankroll -= playerBet
             
             elif(playerFinalTotal == 21):
-                print(f"{self.player.name} got Blackjack!")
-        
-            elif(playerFinalTotal > 21):
-                print(f"{self.player.name} Busted!")
+                print(f"{self.player.name} got Blackjack! You got {playerBet * 1.5} chips")
+                self.player.bankroll += playerBet * 1.5
 
             elif(dealerFinalTotal > 21):
-                print("Dealer busted!")
+                print(f"Dealer busted! Yo got {playerBet} chips")
+                self.player.bankroll += playerBet
             
             elif(dealerFinalTotal > playerFinalTotal):
-                print("Dealer won")
-            
+                print(f"Dealer won! You lost {playerBet} chips")
+                self.player.bankroll -= playerBet
+
+            elif(dealerFinalTotal < playerFinalTotal):
+                print(f"{self.player.name} won! You won {playerBet} chips")
+                self.player.bankroll += playerBet
+
             else:
-                print(f"{self.player.name} won")
+                print("A push. No chips lost")
 
             while(True):
                 command: str = input("Play again? [Y/N]").upper()
@@ -175,5 +195,11 @@ class Game:
 
 
 # Testing purposes
-newGame: Game = Game("Player", 2)
+startingBankroll: int = int(input("How many chips will you start with?\n"))
+deckSize: int = int(input("How many decks will be used?\n"))
+burnCards: int = int(input("How many cards should be burnt from the deck\n"))
+playerName: str = input("What is your name?\n")
+
+print("\n\n~~Game starting~~\n")
+newGame: Game = Game(playerName, deckSize, startingBankroll, burnCards)
 newGame.runGame()

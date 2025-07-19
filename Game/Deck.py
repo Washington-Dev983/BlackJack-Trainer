@@ -81,7 +81,7 @@ class Deck:
     """
     cards: list[Card] = []
 
-    def __init__(self, size: int = 1):
+    def __init__(self, size: int = 1, burnCards: int = 0):
         """
         Parameters
         ----------
@@ -97,6 +97,9 @@ class Deck:
                     self.cards.append(Card(suit, value))
 
         self.shuffle()
+
+        for _ in range(burnCards):
+            self.cards.pop()
 
     def shuffle(self) -> None:
         for i in range(len(self.cards)):

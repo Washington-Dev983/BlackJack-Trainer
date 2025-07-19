@@ -7,12 +7,11 @@ This is a simple blackjack simulator that I made to practice blackjack skills. I
     1. Player vs Dealer
     2. Accurate multideck tracking
     3. Low card reshuffling
+    4. Betting
 
 ## Future Plans
-    1. Betting
-    2. Running and true count tracking
-    3. AI players
-    4. Adaptation to Fast AI for web app interface
+    1. Running and true count tracking
+    2. Adaptation to Fast AI for web app interface
 
 ## How to run
     1. Have python installed
